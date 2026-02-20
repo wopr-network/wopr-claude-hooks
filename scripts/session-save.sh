@@ -6,7 +6,7 @@ set -uo pipefail
 
 MEMORY_FILE="$HOME/.wopr-memory.md"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
-REPOS=(wopr wopr-platform wopr-platform-ui wopr-plugin-discord wopr-plugin-provider-anthropic wopr-plugin-provider-openai wopr-plugin-discord)
+REPOS=(wopr wopr-platform wopr-platform-ui wopr-plugin-discord wopr-plugin-provider-anthropic wopr-plugin-provider-openai)
 
 {
   echo "## Session: $TIMESTAMP"
