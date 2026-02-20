@@ -6,14 +6,14 @@ set -uo pipefail
 
 MEMORY_FILE="$HOME/.wopr-memory.md"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
-REPOS=(wopr wopr-platform wopr-platform-ui wopr-plugin-discord wopr-plugin-provider-anthropic wopr-plugin-provider-openai)
 
 {
   echo "## Session: $TIMESTAMP"
-  for REPO in "${REPOS[@]}"; do
-    REPO_PATH="$HOME/$REPO"
+  for REPO_PATH in "$HOME"/*/; do
     [ -d "$REPO_PATH/.git" ] || continue
+    REPO=$(basename "$REPO_PATH")
     BRANCH=$(git -C "$REPO_PATH" branch --show-current 2>/dev/null) || continue
+    [ -z "$BRANCH" ] && continue        # skip detached HEAD
     [ "$BRANCH" = "main" ] && continue  # skip if nothing in progress
     LAST=$(git -C "$REPO_PATH" log --oneline -1 2>/dev/null)
     DIRTY=$(git -C "$REPO_PATH" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
