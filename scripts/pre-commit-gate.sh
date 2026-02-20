@@ -11,6 +11,37 @@ if ! echo "$COMMAND" | grep -qE 'git\s+commit'; then
   exit 0
 fi
 
+# Determine repo directory from the command, since the hook shell always
+# starts from the home directory, not the repo being committed.
+REPO_DIR=""
+
+# Try: git -C <path> commit
+if echo "$COMMAND" | grep -qE 'git\s+-C\s+'; then
+  REPO_DIR=$(echo "$COMMAND" | grep -oP 'git\s+-C\s+\K\S+' | head -1)
+fi
+
+# Try: cd <path> before git commit
+if [ -z "$REPO_DIR" ]; then
+  REPO_DIR=$(echo "$COMMAND" | sed -n 's/.*cd \([^;&|[:space:]"'\'']*\).*/\1/p' | head -1)
+fi
+
+# Navigate there if we found a path
+if [ -n "$REPO_DIR" ]; then
+  cd "$REPO_DIR" 2>/dev/null || {
+    echo "pre-commit-gate: could not cd to '$REPO_DIR', skipping gate" >&2
+    exit 0
+  }
+fi
+
+# Resolve git root (also validates we are inside a git repo)
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$GIT_ROOT"
+
+# Skip non-Node projects
+if [ ! -f "package.json" ]; then
+  exit 0
+fi
+
 # Detect package manager
 if [ -f "bun.lockb" ]; then
   PM="bun"
